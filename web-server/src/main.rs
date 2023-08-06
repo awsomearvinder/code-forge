@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use axum::response::Html;
 use axum::{routing, Router, Server};
 use clap::Parser;
+use git2::BranchType;
 use tokio::fs::DirBuilder;
 use tokio_stream::StreamExt;
 
@@ -56,6 +57,32 @@ async fn get_entries(path: &Path) -> Vec<OsString> {
     entries_buff
 }
 
+async fn repo_page(args: &Args, entity: &str, name: &str) -> Html<String> {
+    let repo =
+        git2::Repository::open_bare(args.data_dir.join(format!("repositories/{entity}/{name}")))
+            .unwrap();
+    let mut walk = repo.revwalk().unwrap();
+    walk.push(
+        repo.find_branch("master", BranchType::Local)
+            .unwrap()
+            .into_reference()
+            .peel_to_commit()
+            .unwrap()
+            .id(),
+    )
+    .unwrap();
+    let messages: String = walk
+        .take(10)
+        .map(|oid| {
+            let commit = repo.find_commit(oid.unwrap()).unwrap();
+            let message = commit.message().unwrap();
+            let [header, body @ ..]: &[&str] = &message.split('\n').collect::<Vec<_>>()[..] else { panic!("Should atleast have an empty string in header") };
+            format!("<p><b>{}</b></br>{}</p>", header, body.join("</br>"))
+        })
+        .collect();
+    Html(format!("<!DOCTYPE HTML> {}", messages))
+}
+
 async fn entity_page(args: &Args, entity_name: &str) -> Html<String> {
     let repo_entry_links: String =
         get_entries(&args.data_dir.join(format!("repositories/{entity_name}")))
@@ -99,6 +126,16 @@ async fn async_main() {
                     move |axum::extract::Path(name): axum::extract::Path<String>| async move {
                         entity_page(&args, &name).await
                     }
+                }),
+            )
+            .route(
+                "/:entity/:repo",
+                routing::get({
+                    let args = args.clone();
+                    move |axum::extract::Path((name, repo)): axum::extract::Path<(
+                        String,
+                        String,
+                    )>| async move { repo_page(&args, &name, &repo).await }
                 }),
             );
     Server::bind(&"[::1]:4000".parse().unwrap())
