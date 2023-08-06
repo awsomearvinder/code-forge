@@ -2,6 +2,7 @@ use std::ffi::OsString;
 use std::path::Path;
 use std::path::PathBuf;
 
+use axum::http::StatusCode;
 use axum::response::Html;
 use axum::{routing, Router, Server};
 use clap::Parser;
@@ -57,10 +58,15 @@ async fn get_entries(path: &Path) -> Vec<OsString> {
     entries_buff
 }
 
-async fn repo_page(args: &Args, entity: &str, name: &str) -> Html<String> {
+async fn repo_page(args: &Args, entity: &str, name: &str) -> Result<Html<String>, StatusCode> {
     let repo =
         git2::Repository::open_bare(args.data_dir.join(format!("repositories/{entity}/{name}")))
-            .unwrap();
+            .map_err(|e| match e.code() {
+                git2::ErrorCode::NotFound => StatusCode::NOT_FOUND,
+                e => {
+                    panic!("Couldn't open repo {entity}/{name}, got unexpected error: {e:?}")
+                }
+            })?;
     let mut walk = repo.revwalk().unwrap();
     walk.push(
         repo.find_branch("master", BranchType::Local)
@@ -80,7 +86,7 @@ async fn repo_page(args: &Args, entity: &str, name: &str) -> Html<String> {
             format!("<p><b>{}</b></br>{}</p>", header, body.join("</br>"))
         })
         .collect();
-    Html(format!("<!DOCTYPE HTML> {}", messages))
+    Ok(Html(format!("<!DOCTYPE HTML> {}", messages)))
 }
 
 async fn entity_page(args: &Args, entity_name: &str) -> Html<String> {
