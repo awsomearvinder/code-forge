@@ -68,15 +68,8 @@ async fn repo_page(args: &Args, entity: &str, name: &str) -> Result<Html<String>
                 }
             })?;
     let mut walk = repo.revwalk().unwrap();
-    walk.push(
-        repo.find_branch("master", BranchType::Local)
-            .unwrap()
-            .into_reference()
-            .peel_to_commit()
-            .unwrap()
-            .id(),
-    )
-    .unwrap();
+    walk.push(repo.head().unwrap().peel_to_commit().unwrap().id())
+        .unwrap();
     let messages: String = walk
         .take(10)
         .map(|oid| {
