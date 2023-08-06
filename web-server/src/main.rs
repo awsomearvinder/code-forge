@@ -75,8 +75,8 @@ async fn repo_page(args: &Args, entity: &str, name: &str) -> Html<String> {
         .take(10)
         .map(|oid| {
             let commit = repo.find_commit(oid.unwrap()).unwrap();
-            let message = commit.message().unwrap();
-            let [header, body @ ..]: &[&str] = &message.split('\n').collect::<Vec<_>>()[..] else { panic!("Should atleast have an empty string in header") };
+            let message = commit.message().unwrap_or("(empty commit message)");
+            let [header, body @ ..]: &[&str] = &message.split('\n').collect::<Vec<_>>()[..] else { unreachable!() }; // body is empty in the case where there's no new line
             format!("<p><b>{}</b></br>{}</p>", header, body.join("</br>"))
         })
         .collect();
