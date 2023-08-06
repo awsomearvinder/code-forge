@@ -56,6 +56,21 @@ async fn get_entries(path: &Path) -> Vec<OsString> {
     entries_buff
 }
 
+async fn entity_page(args: &Args, entity_name: &str) -> Html<String> {
+    let repo_entry_links: String =
+        get_entries(&args.data_dir.join(format!("repositories/{entity_name}")))
+            .await
+            .into_iter()
+            .map(|i| {
+                format!(
+                    "<a href=\"{entity_name}/{0}\"> {0} </a>\n",
+                    i.to_str().unwrap()
+                )
+            })
+            .collect();
+    Html(format!("<!DOCTYPE HTML>\n{}", repo_entry_links))
+}
+
 async fn home_page(args: &Args) -> Html<String> {
     let repo_entry_links: String = get_entries(&args.data_dir.join("repositories/"))
         .await
@@ -75,6 +90,15 @@ async fn async_main() {
                 routing::get({
                     let args = args.clone();
                     move || async move { home_page(&args).await }
+                }),
+            )
+            .route(
+                "/:entity",
+                routing::get({
+                    let args = args.clone();
+                    move |axum::extract::Path(name): axum::extract::Path<String>| async move {
+                        entity_page(&args, &name).await
+                    }
                 }),
             );
     Server::bind(&"[::1]:4000".parse().unwrap())
