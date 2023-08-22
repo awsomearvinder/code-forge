@@ -50,7 +50,18 @@
       devShell = pkgs.mkShell {
         inputsFrom = builtins.attrValues self.packages.${system};
         nativeBuildInputs = [pkgs.pkg-config];
-        buildInputs = [pkgs.cargo pkgs.rust-analyzer pkgs.clippy pkgs.rustfmt] ++ web-serverBuildInputs;
+        buildInputs =
+          [
+            pkgs.cargo
+            pkgs.rust-analyzer
+            pkgs.clippy
+            pkgs.rustfmt
+            pkgs.nodejs
+            pkgs.nodePackages_latest.typescript-language-server
+            pkgs.nodePackages_latest.svelte-language-server
+            pkgs.nodePackages_latest.svelte-check
+          ]
+          ++ web-serverBuildInputs;
       };
     });
 }
