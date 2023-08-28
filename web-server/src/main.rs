@@ -13,16 +13,13 @@ use tokio_stream::StreamExt;
 
 use tower_http::cors::{Any, CorsLayer};
 
+mod entities;
+
 /// Webserver component for the code forge.
 #[derive(clap::Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
     data_dir: PathBuf,
-}
-
-#[derive(serde::Serialize)]
-struct Entities {
-    entities: Vec<Entity>,
 }
 
 #[derive(serde::Serialize)]
@@ -44,11 +41,6 @@ struct CommitLog {
 struct Commit {
     message_header: String,
     message_body: String,
-}
-
-#[derive(serde::Serialize)]
-struct Entity {
-    name: String,
 }
 
 fn main() {
@@ -132,17 +124,6 @@ async fn entity_page(args: &Args, entity_name: &str) -> Json<Repos> {
     })
 }
 
-async fn entities(args: &Args) -> Json<Entities> {
-    let entities: Vec<Entity> = get_entries(dbg!(&args.data_dir.join("repositories/")))
-        .await
-        .into_iter()
-        .map(|i| Entity {
-            name: i.to_str().unwrap().to_owned(),
-        })
-        .collect();
-    Json(Entities { entities })
-}
-
 async fn async_main() {
     let args = std::sync::Arc::new(Args::parse());
     datadir_init(&args.data_dir).await;
@@ -152,7 +133,7 @@ async fn async_main() {
                 "/api/entities",
                 routing::get({
                     let args = args.clone();
-                    move || async move { entities(&args).await }
+                    move || async move { entities::entities(&args).await }
                 }),
             )
             .route(
