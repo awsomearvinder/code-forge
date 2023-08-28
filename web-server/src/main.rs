@@ -78,7 +78,7 @@ async fn async_main() {
                 routing::get({
                     let args = args.clone();
                     move |axum::extract::Path(name): axum::extract::Path<String>| async move {
-                        entities::entity_page(&args, &name).await
+                        entities::Entity::repos(&args, &name).await
                     }
                 }),
             )
