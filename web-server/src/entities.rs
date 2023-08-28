@@ -12,6 +12,16 @@ struct Entity {
     name: String,
 }
 
+#[derive(serde::Serialize)]
+pub(crate) struct Repos {
+    repos: Vec<Repo>,
+}
+
+#[derive(serde::Serialize)]
+struct Repo {
+    name: String,
+}
+
 pub(crate) async fn entities(args: &Args) -> Json<Entities> {
     let entities: Vec<Entity> = get_entries(&args.data_dir.join("repositories/"))
         .await
@@ -21,4 +31,17 @@ pub(crate) async fn entities(args: &Args) -> Json<Entities> {
         })
         .collect();
     Json(Entities { entities })
+}
+
+pub(crate) async fn entity_page(args: &Args, entity_name: &str) -> Json<Repos> {
+    let repo_entry_links = get_entries(&args.data_dir.join(format!("repositories/{entity_name}")))
+        .await
+        .into_iter()
+        .map(|i| Repo {
+            name: i.to_str().unwrap().to_owned(),
+        })
+        .collect();
+    Json(Repos {
+        repos: repo_entry_links,
+    })
 }
