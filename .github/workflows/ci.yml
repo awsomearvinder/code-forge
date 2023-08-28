@@ -1,0 +1,38 @@
+on:
+  pull_request:
+  push:
+
+jobs:
+  test-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: install nix
+        uses: cachix/install-nix-action@v22
+
+      - name: run clippy
+        run: nix develop --command cargo clippy
+
+      - name: run tests
+        run: nix develop --command cargo test
+
+  test-svelte:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: install nix
+        uses: cachix/install-nix-action@v22
+
+      - name: install libraries
+        run: npm ci
+        working-directory: web-frontend
+
+      - name: run build
+        run: npm run build
+        working-directory: web-frontend
+
+      - name: run check
+        run: nix develop --command svelte-check
+        working-directory: web-frontend
