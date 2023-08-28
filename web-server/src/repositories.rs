@@ -13,19 +13,21 @@ struct Commit {
     message_body: String,
 }
 
-pub(crate) async fn repo_page(
+pub(crate) async fn commit_log(
     args: &Args,
     entity: &str,
-    name: &str,
+    repo_name: &str,
 ) -> Result<Json<CommitLog>, StatusCode> {
-    let repo =
-        git2::Repository::open_bare(args.data_dir.join(format!("repositories/{entity}/{name}")))
-            .map_err(|e| match e.code() {
-                git2::ErrorCode::NotFound => StatusCode::NOT_FOUND,
-                e => {
-                    panic!("Couldn't open repo {entity}/{name}, got unexpected error: {e:?}")
-                }
-            })?;
+    let repo = git2::Repository::open_bare(
+        args.data_dir
+            .join(format!("repositories/{entity}/{repo_name}")),
+    )
+    .map_err(|e| match e.code() {
+        git2::ErrorCode::NotFound => StatusCode::NOT_FOUND,
+        e => {
+            panic!("Couldn't open repo {entity}/{repo_name}, got unexpected error: {e:?}")
+        }
+    })?;
     let mut walk = repo.revwalk().unwrap();
     walk.push(repo.head().unwrap().peel_to_commit().unwrap().id())
         .unwrap();
