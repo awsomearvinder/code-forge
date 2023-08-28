@@ -90,7 +90,7 @@ async fn async_main() {
                         String,
                         String,
                     )>| async move {
-                        repositories::commit_log(&args, &name, &repo).await
+                        repositories::CommitLog::commit_log(&args, &name, &repo).await
                     }
                 }),
             )
