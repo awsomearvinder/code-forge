@@ -2,8 +2,6 @@ use std::ffi::OsString;
 use std::path::Path;
 use std::path::PathBuf;
 
-use axum::http::StatusCode;
-
 use axum::Json;
 use axum::{routing, Router, Server};
 use clap::Parser;
@@ -14,6 +12,7 @@ use tokio_stream::StreamExt;
 use tower_http::cors::{Any, CorsLayer};
 
 mod entities;
+mod repositories;
 
 /// Webserver component for the code forge.
 #[derive(clap::Parser, Debug)]
@@ -30,17 +29,6 @@ struct Repos {
 #[derive(serde::Serialize)]
 struct Repo {
     name: String,
-}
-
-#[derive(serde::Serialize)]
-struct CommitLog {
-    commits: Vec<Commit>,
-}
-
-#[derive(serde::Serialize)]
-struct Commit {
-    message_header: String,
-    message_body: String,
 }
 
 fn main() {
@@ -84,33 +72,6 @@ async fn get_entries(path: &Path) -> Vec<OsString> {
     entries_buff
 }
 
-async fn repo_page(args: &Args, entity: &str, name: &str) -> Result<Json<CommitLog>, StatusCode> {
-    let repo =
-        git2::Repository::open_bare(args.data_dir.join(format!("repositories/{entity}/{name}")))
-            .map_err(|e| match e.code() {
-                git2::ErrorCode::NotFound => StatusCode::NOT_FOUND,
-                e => {
-                    panic!("Couldn't open repo {entity}/{name}, got unexpected error: {e:?}")
-                }
-            })?;
-    let mut walk = repo.revwalk().unwrap();
-    walk.push(repo.head().unwrap().peel_to_commit().unwrap().id())
-        .unwrap();
-    let messages: Vec<Commit> = walk
-        .take(10)
-        .map(|oid| {
-            let commit = repo.find_commit(oid.unwrap()).unwrap();
-            let message = commit.message().unwrap_or("(empty commit message)");
-            let [header, body @ ..]: &[&str] = &message.split('\n').collect::<Vec<_>>()[..] else { unreachable!() }; // body is empty in the case where there's no new line
-            Commit {
-                message_header: header.to_string(),
-                message_body: body.join("\n"),
-            }
-        })
-        .collect();
-    Ok(Json(CommitLog { commits: messages }))
-}
-
 async fn entity_page(args: &Args, entity_name: &str) -> Json<Repos> {
     let repo_entry_links = get_entries(&args.data_dir.join(format!("repositories/{entity_name}")))
         .await
@@ -152,7 +113,9 @@ async fn async_main() {
                     move |axum::extract::Path((name, repo)): axum::extract::Path<(
                         String,
                         String,
-                    )>| async move { repo_page(&args, &name, &repo).await }
+                    )>| async move {
+                        repositories::repo_page(&args, &name, &repo).await
+                    }
                 }),
             )
             .layer(CorsLayer::new().allow_origin(Any));
