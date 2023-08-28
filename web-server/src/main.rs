@@ -2,7 +2,6 @@ use std::ffi::OsString;
 use std::path::Path;
 use std::path::PathBuf;
 
-use axum::Json;
 use axum::{routing, Router, Server};
 use clap::Parser;
 
@@ -19,16 +18,6 @@ mod repositories;
 #[command(version, about, long_about = None)]
 struct Args {
     data_dir: PathBuf,
-}
-
-#[derive(serde::Serialize)]
-struct Repos {
-    repos: Vec<Repo>,
-}
-
-#[derive(serde::Serialize)]
-struct Repo {
-    name: String,
 }
 
 fn main() {
@@ -72,19 +61,6 @@ async fn get_entries(path: &Path) -> Vec<OsString> {
     entries_buff
 }
 
-async fn entity_page(args: &Args, entity_name: &str) -> Json<Repos> {
-    let repo_entry_links = get_entries(&args.data_dir.join(format!("repositories/{entity_name}")))
-        .await
-        .into_iter()
-        .map(|i| Repo {
-            name: i.to_str().unwrap().to_owned(),
-        })
-        .collect();
-    Json(Repos {
-        repos: repo_entry_links,
-    })
-}
-
 async fn async_main() {
     let args = std::sync::Arc::new(Args::parse());
     datadir_init(&args.data_dir).await;
@@ -102,7 +78,7 @@ async fn async_main() {
                 routing::get({
                     let args = args.clone();
                     move |axum::extract::Path(name): axum::extract::Path<String>| async move {
-                        entity_page(&args, &name).await
+                        entities::entity_page(&args, &name).await
                     }
                 }),
             )
