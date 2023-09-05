@@ -9,7 +9,7 @@
     });
 </script>
 
-<h1> Repositories: </h1>
+<h1> Entities: </h1>
 <ul>
     {#each $entities as entity (entity.name)}
       <li> <a href = "/{entity.name}"> {entity.name} </a> </li>
