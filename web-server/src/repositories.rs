@@ -11,6 +11,7 @@ pub(crate) struct CommitLog {
 struct Commit {
     message_header: String,
     message_body: String,
+    commit_id: String,
 }
 
 impl CommitLog {
@@ -41,6 +42,7 @@ impl CommitLog {
                 Commit {
                     message_header: header.to_string(),
                     message_body: body.join("\n"),
+                    commit_id: format!("{}", commit.id()),
                 }
             })
             .collect();
