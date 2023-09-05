@@ -10,7 +10,7 @@
     });
 </script>
 
-<h1> Repositories: </h1>
+<h1> Commit Log: </h1>
 <ul>
     {#each $commits as commit (commit.message_header)}
       <h3> {commit.message_header} </h3>
