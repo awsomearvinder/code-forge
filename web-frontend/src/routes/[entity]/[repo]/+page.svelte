@@ -17,7 +17,7 @@
           <h3> {commit.message_header} </h3>
           {#if commit.message_body}
               <hr>
-              <p> {commit.message_body.trim()} </p>
+              <code> {commit.message_body.trim()} </code>
           {/if}
       </div>
     {/each}
@@ -34,7 +34,7 @@
         padding: 0rem;
         border: 0.2rem solid black;
     }
-    .commit-log p {
+    .commit-log code {
         margin: 0.2rem;
         white-space: pre-line;
     }
