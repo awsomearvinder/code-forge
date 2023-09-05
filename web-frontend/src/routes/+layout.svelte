@@ -1,5 +1,6 @@
 <script lang = "ts">
     import Nav from "./Nav.svelte";
+    import "./global.css";
     let styling = {
         bg: "white",
     };
