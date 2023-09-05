@@ -43,7 +43,7 @@
         width: 100%;
     }
     .commit-log {
-        margin: 1rem 0;
+        margin: 0.5rem 0;
         padding: 0rem;
         border: 0.2rem solid black;
     }
