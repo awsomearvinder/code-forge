@@ -13,7 +13,7 @@
 <h1> Repositories: </h1>
 <ul>
     {#each $commits as commit (commit.message_header)}
-      <h3> {commit.message_body} </h3>
+      <h3> {commit.message_header} </h3>
       <p> {commit.message_body} </p>
     {/each}
 </ul>
