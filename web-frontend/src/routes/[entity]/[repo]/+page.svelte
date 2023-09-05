@@ -49,6 +49,7 @@
     }
     .commit-description {
         white-space: pre-line;
+        box-decoration-break: clone;
     }
     .commit-title, .commit-id, .commit-description {
         margin: 0.3rem 0.7rem;
