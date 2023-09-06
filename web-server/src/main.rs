@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use axum::{routing, Router, Server};
 use clap::Parser;
 
+use repositories::CommitLogReq;
 use tokio::fs::DirBuilder;
 use tokio_stream::StreamExt;
 
@@ -86,11 +87,9 @@ async fn async_main() {
                 "/api/:entity/:repo/commits",
                 routing::get({
                     let args = args.clone();
-                    move |axum::extract::Path((name, repo)): axum::extract::Path<(
-                        String,
-                        String,
-                    )>| async move {
-                        repositories::CommitLog::commit_log(&args, &name, &repo).await
+                    move |axum::extract::Path((name, repo)): axum::extract::Path<(String, String)>,
+                          axum::extract::Query(req): axum::extract::Query<CommitLogReq>| async move {
+                        repositories::CommitLog::commit_log(&args, &name, &repo, &req).await
                     }
                 }),
             )

@@ -1,4 +1,5 @@
 use axum::{http::StatusCode, Json};
+use git2::Oid;
 
 use crate::Args;
 
@@ -14,11 +15,20 @@ struct Commit {
     commit_id: String,
 }
 
+#[derive(Debug, serde::Deserialize)]
+pub(crate) struct CommitLogReq {
+    #[serde(default)]
+    rev: Option<String>,
+    #[serde(default)]
+    increment: i32,
+}
+
 impl CommitLog {
     pub(crate) async fn commit_log(
         args: &Args,
         entity: &str,
         repo_name: &str,
+        req: &CommitLogReq,
     ) -> Result<Json<CommitLog>, StatusCode> {
         let repo = git2::Repository::open_bare(
             args.data_dir
@@ -31,9 +41,22 @@ impl CommitLog {
             }
         })?;
         let mut walk = repo.revwalk().unwrap();
-        walk.push(repo.head().unwrap().peel_to_commit().unwrap().id())
-            .unwrap();
+
+        match &req.rev {
+            Some(v) => walk
+                .push(
+                    repo.find_commit(Oid::from_str(v).unwrap())
+                        .map_err(|_| StatusCode::NOT_FOUND)?
+                        .id(),
+                )
+                .unwrap(),
+            None => walk
+                .push(repo.head().unwrap().peel_to_commit().unwrap().id())
+                .unwrap(),
+        }
+
         let messages: Vec<Commit> = walk
+            .skip(req.increment.try_into().unwrap())
             .take(10)
             .map(|oid| {
                 let commit = repo.find_commit(oid.unwrap()).unwrap();
