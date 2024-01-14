@@ -4,4 +4,4 @@ run data_dir:
 	cargo run -- {{ data_dir }}&
 	webserver_pid=$!
 	trap "kill $webserver_pid" EXIT
-	(cd web-frontend; npm run dev -- --port {{ port }})
+	(cd web-frontend; npm ci && npm run dev -- --port {{ port }})
