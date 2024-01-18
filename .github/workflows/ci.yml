@@ -11,6 +11,9 @@ jobs:
       - name: install nix
         uses: cachix/install-nix-action@v22
 
+      - name: setup cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
       - name: run clippy
         run: nix develop --command cargo clippy
 
