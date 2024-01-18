@@ -1,22 +1,12 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { onMount } from "svelte";
-    import { writable } from "svelte/store";
-    type Commits = {
-        message_header: string,
-        message_body: string,
-        commit_id: string,
-    };
-    const commits = writable([] as Commits[]);
-    onMount(async () =>{
-        let response = await fetch(`http://localhost:4000/api/${$page.url.pathname.substring(1)}/commits`);
-        commits.set((await response.json()).commits);
-    });
+    import type { PageData } from "./$types";
+    export let data: PageData;
 </script>
 
 <h1> Commit Log: </h1>
 <ul>
-    {#each $commits as commit (commit.message_header)}
+    {#each data.commits as commit (commit.commit_id)}
       <div class = "commit-log">
           <div class = "commit-header">
               <h3 class="commit-title"> {commit.message_header} </h3>
@@ -29,6 +19,8 @@
       </div>
     {/each}
 </ul>
+<a href="{$page.url.pathname}?rev={data.ref}&increment={data.increment - 10 < 0 ? 0 : data.increment  - 10}"> Prev </a>
+<a href="{$page.url.pathname}?rev={data.ref}&increment={data.increment + 10}"> Next </a>
 
 
 <style>
