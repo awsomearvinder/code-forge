@@ -30,6 +30,9 @@ jobs:
       - name: install nix
         uses: cachix/install-nix-action@v22
 
+      - name: setup cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+
       - name: install libraries
         run: npm ci
         working-directory: web-frontend
