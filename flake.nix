@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     crate2nix = {
       url = "github:kolloch/crate2nix";
       flake = false;
