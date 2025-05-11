@@ -108,7 +108,7 @@ async fn async_main() {
                     let args = args.clone();
                     move |axum::extract::Path((name, repo)): axum::extract::Path<(String, String)>,
                           axum::extract::Query(req): axum::extract::Query<CommitLogReq>| async move {
-                        repositories::CommitLog::commit_log(&args, &name, &repo, &req).await.map(|r| Json(r))
+                        repositories::CommitLog::commit_log(&args, &name, &repo, &req).await.map(Json)
                     }
                 }),
             )

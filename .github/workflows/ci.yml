@@ -21,26 +21,3 @@ jobs:
 
       - name: run tests
         run: nix develop --command cargo test
-
-  test-svelte:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: install nix
-        uses: cachix/install-nix-action@v22
-
-      - name: setup cache
-        uses: DeterminateSystems/magic-nix-cache-action@v2
-
-      - name: install libraries
-        run: npm ci
-        working-directory: web-frontend
-
-      - name: run build
-        run: npm run build
-        working-directory: web-frontend
-
-      - name: run check
-        run: nix develop --command svelte-check
-        working-directory: web-frontend

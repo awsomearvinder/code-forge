@@ -56,10 +56,6 @@
             pkgs.rust-analyzer
             pkgs.clippy
             pkgs.rustfmt
-            pkgs.nodejs
-            pkgs.nodePackages_latest.typescript-language-server
-            pkgs.nodePackages_latest.svelte-language-server
-            pkgs.nodePackages_latest.svelte-check
             pkgs.just
             pkgs.watchexec
           ]
