@@ -61,6 +61,7 @@
             pkgs.nodePackages_latest.svelte-language-server
             pkgs.nodePackages_latest.svelte-check
             pkgs.just
+            pkgs.watchexec
           ]
           ++ web-serverBuildInputs;
       };

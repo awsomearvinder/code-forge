@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1> Entities: </h1>
+<ul>
+  {% for entity in entities %}
+    <li> <a href="/e/{{entity.name}}"> {{ entity.name }} </a> </li>
+  {% endfor %}
+</ul>
+{% endblock content %}

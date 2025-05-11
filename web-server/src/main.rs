@@ -2,6 +2,7 @@ use std::ffi::OsString;
 use std::path::Path;
 use std::path::PathBuf;
 
+use axum::Json;
 use axum::{routing, Router, Server};
 use clap::Parser;
 
@@ -12,6 +13,7 @@ use tokio_stream::StreamExt;
 use tower_http::cors::{Any, CorsLayer};
 
 mod entities;
+mod frontend;
 mod repositories;
 
 /// Webserver component for the code forge.
@@ -65,13 +67,30 @@ async fn get_entries(path: &Path) -> Vec<OsString> {
 async fn async_main() {
     let args = std::sync::Arc::new(Args::parse());
     datadir_init(&args.data_dir).await;
+    let f = std::sync::Arc::new(frontend::Frontend::new(args.clone()));
     let app =
         Router::new()
+            .route("/", routing::get({
+                let f = f.clone();
+                move || async move { f.index().await }
+            }))
+            .route("/entities", routing::get({
+                let f = f.clone();
+                move || async move { f.entities().await }
+            }))
+            .route("/e/:name", routing::get({
+                let f = f.clone();
+                move |axum::extract::Path(name): axum::extract::Path<String>| async move { f.repositories(&name).await }
+            }))
+            .route("/r/:entity/:repo", routing::get({
+                let f = f.clone();
+                move |axum::extract::Path((entity, repo)): axum::extract::Path<(String, String)>, axum::extract::Query(req): axum::extract::Query<CommitLogReq>| async move { f.repository(&entity, &repo, &req).await }
+            }))
             .route(
                 "/api/entities",
                 routing::get({
                     let args = args.clone();
-                    move || async move { entities::entities(&args).await }
+                    move || async move { Json(entities::entities(&args).await) }
                 }),
             )
             .route(
@@ -79,7 +98,7 @@ async fn async_main() {
                 routing::get({
                     let args = args.clone();
                     move |axum::extract::Path(name): axum::extract::Path<String>| async move {
-                        entities::Entity::repos(&args, &name).await
+                        Json(entities::Entity::repos(&args, &name).await)
                     }
                 }),
             )
@@ -89,7 +108,7 @@ async fn async_main() {
                     let args = args.clone();
                     move |axum::extract::Path((name, repo)): axum::extract::Path<(String, String)>,
                           axum::extract::Query(req): axum::extract::Query<CommitLogReq>| async move {
-                        repositories::CommitLog::commit_log(&args, &name, &repo, &req).await
+                        repositories::CommitLog::commit_log(&args, &name, &repo, &req).await.map(|r| Json(r))
                     }
                 }),
             )

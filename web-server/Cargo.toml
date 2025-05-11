@@ -10,6 +10,7 @@ axum = "0.6.19"
 clap = { version = "4.3.19", features = ["derive"] }
 git2 = "0.17.2"
 serde = { version = "1.0.185", features = ["derive"] }
+tera = "1.20.0"
 tokio = { version = "1.29.1", features = ["rt", "rt-multi-thread", "fs"] }
 tokio-stream = { version = "0.1.14", features = ["fs"] }
 tower-http = { version = "0.4.3", features = ["cors"] }

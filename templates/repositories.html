@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1> Repositories: </h1>
+<ul>
+  {% for repo in repositories %}
+    <li> <a href="/r/{{entity_name}}/{{repo.name}}"> {{ repo.name }} </a> </li>
+  {% endfor %}
+</ul>
+{% endblock content %}
