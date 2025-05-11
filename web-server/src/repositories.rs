@@ -1,4 +1,4 @@
-use axum::{http::StatusCode, Json};
+use axum::http::StatusCode;
 use git2::Oid;
 
 use crate::Args;
