@@ -1,5 +1,3 @@
-use axum::Json;
-
 use crate::{get_entries, Args};
 
 #[derive(serde::Serialize)]
