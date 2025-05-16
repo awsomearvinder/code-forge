@@ -1,0 +1,8 @@
+version: 2
+updates:
+  # Annoyingly enough, doesn't support nix flakes.
+  # Issue: https://github.com/NixOS/nix/issues/9823
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
