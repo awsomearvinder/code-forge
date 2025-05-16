@@ -17,7 +17,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v2
 
       - name: run clippy
-        run: nix develop --command cargo clippy
+        run: nix develop --command cargo clippy -- -D warnings
 
       - name: run tests
         run: nix develop --command cargo test
