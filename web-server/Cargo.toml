@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6.19"
-clap = { version = "4.3.19", features = ["derive"] }
+clap = { version = "4.5.38", features = ["derive"] }
 git2 = "0.17.2"
 serde = { version = "1.0.185", features = ["derive"] }
 tera = "1.20.0"
