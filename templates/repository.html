@@ -10,7 +10,6 @@
   }
   .commit-header {
     display: flex;
-    border-bottom: 0 !important;
     flex-direction: row;
   }
   .commit-header > * {
@@ -39,9 +38,11 @@
             <code class = "commit-title" style="text-align: left;"> <strong> {{ commit.message_header }} </strong> </code>
             <code style="text-align: right;"> {{ commit.commit_id | truncate(length=8, end="") }} </code>
           </div>
-          <div>
-            <code style="white-space-collapse: preserve"> {{ commit.message_body | trim }} </code>
+          {% if commit.message_body | trim | length != 0 %}
+          <div style="overflow: scroll; border-top: 0;">
+            <code style="white-space-collapse: preserve; white-space: nowrap;"> {{ commit.message_body | trim }} </code>
           </div>
+          {% endif %}
         </div>
       </li>
     {% endfor %}
