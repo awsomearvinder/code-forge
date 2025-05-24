@@ -1,12 +1,19 @@
 use std::sync::Arc;
 
-use axum::{http::StatusCode, response::Html};
+use axum::{
+    http::StatusCode,
+    response::{Html, IntoResponse},
+};
 use tera::{Context, Tera};
 
 use crate::{
     repositories::{CommitLog, CommitLogReq},
     Args,
 };
+
+const HOSTNAME: &str = "localhost"; // todo: fix - make this actually a proper config'd item.
+const PORT: i32 = 4000; // todo: fix - make this actually a proper config'd item.
+
 pub struct Frontend {
     args: Arc<Args>,
     tera: Tera,
@@ -20,8 +27,10 @@ impl Frontend {
                 .expect("Failed to create Tera instance from templates/"),
         }
     }
-    pub async fn index(&self) -> Html<String> {
-        Html(self.tera.render("index.html", &Context::new()).unwrap())
+    pub async fn index(&self) -> impl IntoResponse {
+        axum::response::Redirect::temporary(&format!("http://{HOSTNAME}:{PORT}/entities"))
+        // future when we have a homepage, I guess.
+        // Html(self.tera.render("index.html", &Context::new()).unwrap())
     }
     pub async fn entities(&self) -> Html<String> {
         let mut c = Context::new();
