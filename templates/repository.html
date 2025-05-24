@@ -40,7 +40,7 @@
           </div>
           {% if commit.message_body | trim | length != 0 %}
           <div style="overflow: scroll; border-top: 0;">
-            <code style="white-space-collapse: preserve; white-space: nowrap;"> {{ commit.message_body | trim }} </code>
+            <code style="white-space-collapse: preserve; white-space: pre;"> {{ commit.message_body | trim }} </code>
           </div>
           {% endif %}
         </div>
