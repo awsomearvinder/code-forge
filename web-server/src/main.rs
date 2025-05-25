@@ -1,18 +1,23 @@
 use std::ffi::OsString;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use axum::Json;
 use axum::{routing, Router};
 use clap::Parser;
 
 use repositories::CommitLogReq;
+use russh::keys::ssh_key::rand_core::OsRng;
+use russh::server::Server as _;
+use ssh::SshServer;
 use tokio::fs::DirBuilder;
 use tokio_stream::StreamExt;
 
 mod entities;
 mod frontend;
 mod repositories;
+mod ssh;
 
 /// Webserver component for the code forge.
 #[derive(clap::Parser, Debug)]
@@ -24,6 +29,7 @@ struct Args {
 fn main() {
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_io()
+        .enable_time()
         .build()
         .unwrap();
     rt.block_on(async_main());
@@ -109,11 +115,25 @@ async fn async_main() {
                         repositories::CommitLog::commit_log(&args, &name, &repo, &req).await.map(Json)
                     }
                 }),
-            );
-    axum::serve(
+             );
+    let web_server = axum::serve(
         tokio::net::TcpListener::bind("[::1]:4000").await.unwrap(),
         app,
-    )
-    .await
-    .unwrap();
+    );
+    let mut ssh_server = SshServer::new(args.data_dir.clone());
+    let ssh_server = ssh_server.run_on_address(
+        Arc::new(russh::server::Config {
+            keys: vec![russh::keys::PrivateKey::random(
+                &mut OsRng,
+                russh::keys::Algorithm::Ed25519,
+            )
+            .unwrap()],
+            ..Default::default()
+        }),
+        "[::1]:4022",
+    );
+    tokio::select! {
+        s = web_server => s.unwrap(),
+        s = ssh_server => s.unwrap()
+    };
 }
