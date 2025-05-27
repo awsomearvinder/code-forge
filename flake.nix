@@ -36,9 +36,9 @@
           defaultCrateOverrides =
             pkgs.defaultCrateOverrides
             // {
-              git2 = attrs: {
+              libgit2-sys = attrs: {
                 nativeBuildInputs = [pkgs.pkg-config];
-                buildInputs = [pkgs.libgit2];
+                buildInputs = [pkgs.libgit2 pkgs.zlib pkgs.libssh2];
               };
             };
         };
