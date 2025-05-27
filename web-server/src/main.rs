@@ -3,14 +3,12 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use axum::Json;
-use axum::{routing, Router, Server};
+use axum::{routing, Router};
 use clap::Parser;
 
 use repositories::CommitLogReq;
 use tokio::fs::DirBuilder;
 use tokio_stream::StreamExt;
-
-use tower_http::cors::{Any, CorsLayer};
 
 mod entities;
 mod frontend;
@@ -78,11 +76,11 @@ async fn async_main() {
                 let f = f.clone();
                 move || async move { f.entities().await }
             }))
-            .route("/e/:name", routing::get({
+            .route("/e/{name}", routing::get({
                 let f = f.clone();
                 move |axum::extract::Path(name): axum::extract::Path<String>| async move { f.repositories(&name).await }
             }))
-            .route("/r/:entity/:repo", routing::get({
+            .route("/r/{entity}/{repo}", routing::get({
                 let f = f.clone();
                 move |axum::extract::Path((entity, repo)): axum::extract::Path<(String, String)>, axum::extract::Query(req): axum::extract::Query<CommitLogReq>| async move { f.repository(&entity, &repo, &req).await }
             }))
@@ -94,7 +92,7 @@ async fn async_main() {
                 }),
             )
             .route(
-                "/api/:entity/repos",
+                "/api/{entity}/repos",
                 routing::get({
                     let args = args.clone();
                     move |axum::extract::Path(name): axum::extract::Path<String>| async move {
@@ -103,7 +101,7 @@ async fn async_main() {
                 }),
             )
             .route(
-                "/api/:entity/:repo/commits",
+                "/api/{entity}/{repo}/commits",
                 routing::get({
                     let args = args.clone();
                     move |axum::extract::Path((name, repo)): axum::extract::Path<(String, String)>,
@@ -111,10 +109,11 @@ async fn async_main() {
                         repositories::CommitLog::commit_log(&args, &name, &repo, &req).await.map(Json)
                     }
                 }),
-            )
-            .layer(CorsLayer::new().allow_origin(Any));
-    Server::bind(&"[::1]:4000".parse().unwrap())
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+            );
+    axum::serve(
+        tokio::net::TcpListener::bind("[::1]:4000").await.unwrap(),
+        app,
+    )
+    .await
+    .unwrap();
 }
