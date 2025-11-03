@@ -15,7 +15,7 @@ gix-packetline = { version = "0.19.1", features = ["async-io"] }
 russh = "0.52.1"
 serde = { version = "1.0.228", features = ["derive"] }
 tera = "1.20.0"
-tokio = { version = "1.45.1", features = ["rt", "rt-multi-thread", "fs", "io-util", "macros"] }
+tokio = { version = "1.48.0", features = ["rt", "rt-multi-thread", "fs", "io-util", "macros"] }
 tokio-stream = { version = "0.1.17", features = ["fs"] }
 tokio-util = { version = "0.7.16", features = ["compat"] }
 tower-http = { version = "0.6.6", features = ["cors"] }
